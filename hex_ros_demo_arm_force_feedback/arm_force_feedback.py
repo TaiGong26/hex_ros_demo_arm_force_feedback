@@ -15,8 +15,6 @@ from typing import Optional,Tuple
 
 import numpy as np
 
-from utility import DataInterface
-
 from hex_util_msg.dataclass.dataclass_base import (
     HexDcBaseVector3,
     HexDcBaseQuaternion,
@@ -32,7 +30,8 @@ from hex_util_msg.dataclass.dataclass_robo import (
 )
 from hex_util_ros import HexDynUtilY6
 
-from TrajectoryController import Move2TargetPlanner
+from .utility import DataInterface
+from .TrajectoryController import Move2TargetPlanner
 
 ARM_DOF = 6
 GRIP_DOF = 1
@@ -178,8 +177,8 @@ class ArmForceFeedback:
                 eff=np.zeros(ARM_DOF),
                 kp=self.__arm_stable_kp.copy(),
                 kd=self.__arm_stable_kd.copy(),
-                lim_vel=10.0 * np.ones(ARM_DOF,dtype=np.float64),
-                lim_acc=10.0 * np.ones(ARM_DOF,dtype=np.float64),
+                lim_vel=15.0 * np.ones(ARM_DOF,dtype=np.float64),
+                lim_acc=15.0 * np.ones(ARM_DOF,dtype=np.float64),
             ),
             pose=self.__default_pose(),
         )
@@ -315,7 +314,7 @@ class ArmForceFeedback:
             f"[arm_force_feedback]: move to {phase} position")
         
         stable_pos = self.__arm_start_pos if is_start else self.__arm_end_pos
-        duration = 3.5
+        duration = 1.5
 
         # Wait for data from both master and slave arms to arrive.
         master_state = self.__data_interface.get_master_manip_state(
@@ -463,7 +462,6 @@ class ArmForceFeedback:
 
             if master_pos is not None and slave_pos is not None and master_vel is not None:
                 try:
-
                     master_target_pos, zero_mask = self.__compute_effective_target(master_pos, slave_pos,
                         self.__arm_master_deadzone, self.__arm_master_clip)
                     

@@ -1,4 +1,4 @@
-arm_force_feedback:
+/**/arm_force_feedback:
   ros__parameters:
     # impedance control work loop rate [hz]
     rate_ros: 1000.0
