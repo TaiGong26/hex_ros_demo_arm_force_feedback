@@ -39,10 +39,12 @@ hex_ros_demo_arm_force_feedback/
 ├── launch/                                    # ROS launch files
 │   ├── ros1/
 │   │   ├── arm_force_feedback.launch          #   Standalone node launch
+│   │   ├── real2real_force_feedback.launch   #   Real-to-real full launch
+│   │   ├── real2sim_force_feedback.launch     #   Real-to-sim full launch
 │   │   └── sim2sim_force_feedback.launch      #   Sim-to-sim full launch
 │   └── ros2/
 │       ├── arm_force_feedback.launch.py       #   Standalone node launch
-│       ├── real2real_force_feedback.launch.py #   Real-to-real full launch
+│       ├── real2real_force_feedback.launch.py  #   Real-to-real full launch
 │       ├── real2sim_force_feedback.launch.py  #   Real-to-sim full launch
 │       └── sim2sim_force_feedback.launch.py   #   Sim-to-sim full launch
 ├── hex_ros_demo_arm_force_feedback/           # Core source
@@ -182,33 +184,107 @@ source install/setup.bash
 
 This package provides launch files for four scenarios. PD gains, deadzone, clip, and other parameters are configured in `config/<ros_version>/arm_force_feedback.yaml`.
 
-**ROS 2:**
+Before starting a real-robot scenario, edit the default values directly in the corresponding launch file.
+
+#### ROS 2 real-to-simulation
+
+First edit `launch/ros2/real2sim_force_feedback.launch.py`:
+
+```python
+master_robot_host_arg = DeclareLaunchArgument(
+    name='master_robot_host',
+    default_value='192.168.1.100')
+master_robot_port_arg = DeclareLaunchArgument(
+    name='master_robot_port',
+    default_value='8439')
+robot_grip_type_arg = DeclareLaunchArgument(
+    name='robot_grip_type',
+    default_value='empty')
+robot_type_arg = DeclareLaunchArgument(
+    name='robot_type',
+    default_value='archer')
+```
+
+Then launch:
 
 ```shell
-# Simulation-to-simulation (sim2sim): launches two simulators + keyboard teleop + force feedback node
-ros2 launch hex_ros_demo_arm_force_feedback sim2sim_force_feedback.launch.py \
-    viewer:=true rviz:=false
+ros2 launch hex_ros_demo_arm_force_feedback real2sim_force_feedback.launch.py
+```
 
-# Real-to-simulation (real2sim): master is real robot, slave is simulation
-ros2 launch hex_ros_demo_arm_force_feedback real2sim_force_feedback.launch.py \
-    master_robot_host:=<master_ip> master_robot_port:=8439 robot_grip_type:=gr100
+#### ROS 2 real-to-real
 
-# Real-to-real (real2real): both master and slave are real robots
-ros2 launch hex_ros_demo_arm_force_feedback real2real_force_feedback.launch.py \
-    master_robot_host:=<master_ip> master_robot_port:=8439 \
-    slave_robot_host:=<slave_ip> slave_robot_port:=8439 robot_grip_type:=gr100
+First edit `launch/ros2/real2real_force_feedback.launch.py`:
 
-# Start force feedback node only (requires separate arm state/control drivers)
+```python
+master_robot_host_arg = DeclareLaunchArgument(
+    name='master_robot_host',
+    default_value='192.168.1.100')
+master_robot_port_arg = DeclareLaunchArgument(
+    name='master_robot_port',
+    default_value='8439')
+slave_robot_host_arg = DeclareLaunchArgument(
+    name='slave_robot_host',
+    default_value='192.168.1.101')
+slave_robot_port_arg = DeclareLaunchArgument(
+    name='slave_robot_port',
+    default_value='8439')
+robot_grip_type_arg = DeclareLaunchArgument(
+    name='robot_grip_type',
+    default_value='empty')
+robot_type_arg = DeclareLaunchArgument(
+    name='robot_type',
+    default_value='archer')
+```
+
+Then launch:
+
+```shell
+ros2 launch hex_ros_demo_arm_force_feedback real2real_force_feedback.launch.py
+```
+
+#### ROS 1 real-to-simulation
+
+First edit `launch/ros1/real2sim_force_feedback.launch`:
+
+```xml
+<arg name="master_robot_host" default="192.168.1.100"/>
+<arg name="master_robot_port" default="8439"/>
+<arg name="robot_grip_type" default="empty"/>
+<arg name="robot_type" default="archer"/>
+```
+
+Then launch:
+
+```shell
+roslaunch hex_ros_demo_arm_force_feedback real2sim_force_feedback.launch
+```
+
+#### ROS 1 real-to-real
+
+First edit `launch/ros1/real2real_force_feedback.launch`:
+
+```xml
+<arg name="master_robot_host" default="192.168.1.100"/>
+<arg name="master_robot_port" default="8439"/>
+<arg name="slave_robot_host" default="192.168.1.101"/>
+<arg name="slave_robot_port" default="8439"/>
+<arg name="robot_grip_type" default="empty"/>
+<arg name="robot_type" default="archer"/>
+```
+
+Then launch:
+
+```shell
+roslaunch hex_ros_demo_arm_force_feedback real2real_force_feedback.launch
+```
+
+#### Standalone node
+
+```shell
 ros2 launch hex_ros_demo_arm_force_feedback arm_force_feedback.launch.py
 ```
 
-**ROS 1:**
-
 ```shell
-# Simulation-to-simulation (sim2sim)
-roslaunch hex_ros_demo_arm_force_feedback sim2sim_force_feedback.launch viewer:=true rviz:=false
-
-# Start force feedback node only
 roslaunch hex_ros_demo_arm_force_feedback arm_force_feedback.launch
 ```
 

@@ -25,7 +25,6 @@
 
 同时支持 **ROS 1** 和 **ROS 2**，提供四种启动场景：独立节点、仿真对仿真（sim2sim）、真机对仿真（real2sim）、真机对真机（real2real）。
 
-
 ---
 
 ## 2. 包架构
@@ -40,10 +39,12 @@ hex_ros_demo_arm_force_feedback/
 ├── launch/                                    # ROS launch 启动文件
 │   ├── ros1/
 │   │   ├── arm_force_feedback.launch          #   单节点启动
-│   │   └── sim2sim_force_feedback.launch      #   仿真对仿真完整启动
+│   │   ├── real2real_force_feedback.launch   #   真机对真机完整启动
+│   │   ├── real2sim_force_feedback.launch    #   真机对仿真完整启动
+│   │   └── sim2sim_force_feedback.launch     #   仿真对仿真完整启动
 │   └── ros2/
 │       ├── arm_force_feedback.launch.py       #   单节点启动
-│       ├── real2real_force_feedback.launch.py #   真机对真机完整启动
+│       ├── real2real_force_feedback.launch.py  #   真机对真机完整启动
 │       ├── real2sim_force_feedback.launch.py  #   真机对仿真完整启动
 │       └── sim2sim_force_feedback.launch.py   #   仿真对仿真完整启动
 ├── hex_ros_demo_arm_force_feedback/           # 核心代码
@@ -185,31 +186,113 @@ source install/setup.bash
 
 **ROS 2：**
 
+仿真对仿真不需要修改真机连接参数：
+
 ```shell
-# 仿真对仿真（sim2sim）：启动两个仿真环境 + 键盘遥控 + 力反馈节点
-ros2 launch hex_ros_demo_arm_force_feedback sim2sim_force_feedback.launch.py \
-    viewer:=true rviz:=false
+ros2 launch hex_ros_demo_arm_force_feedback sim2sim_force_feedback.launch.py
+```
 
-# 真机对仿真（real2sim）：主臂是真机，从臂是仿真
-ros2 launch hex_ros_demo_arm_force_feedback real2sim_force_feedback.launch.py \
-    master_robot_host:=<master_ip> master_robot_port:=8439 robot_grip_type:=gr100
+真机对仿真请先修改 `launch/ros2/real2sim_force_feedback.launch.py`：
 
-# 真机对真机（real2real）：主臂和从臂都是真机
-ros2 launch hex_ros_demo_arm_force_feedback real2real_force_feedback.launch.py \
-    master_robot_host:=<master_ip> master_robot_port:=8439 \
-    slave_robot_host:=<slave_ip> slave_robot_port:=8439 robot_grip_type:=gr100
+```python
+master_robot_host_arg = DeclareLaunchArgument(
+    name='master_robot_host',
+    default_value='192.168.1.100')
+master_robot_port_arg = DeclareLaunchArgument(
+    name='master_robot_port',
+    default_value='8439')
+robot_grip_type_arg = DeclareLaunchArgument(
+    name='robot_grip_type',
+    default_value='empty')
+robot_type_arg = DeclareLaunchArgument(
+    name='robot_type',
+    default_value='archer')
+```
 
-# 仅启动力反馈节点（需自行提供机械臂状态和控制驱动）
+然后启动：
+
+```shell
+ros2 launch hex_ros_demo_arm_force_feedback real2sim_force_feedback.launch.py
+```
+
+真机对真机请先修改 `launch/ros2/real2real_force_feedback.launch.py`：
+
+```python
+master_robot_host_arg = DeclareLaunchArgument(
+    name='master_robot_host',
+    default_value='192.168.1.100')
+master_robot_port_arg = DeclareLaunchArgument(
+    name='master_robot_port',
+    default_value='8439')
+slave_robot_host_arg = DeclareLaunchArgument(
+    name='slave_robot_host',
+    default_value='192.168.1.101')
+slave_robot_port_arg = DeclareLaunchArgument(
+    name='slave_robot_port',
+    default_value='8439')
+robot_grip_type_arg = DeclareLaunchArgument(
+    name='robot_grip_type',
+    default_value='empty')
+robot_type_arg = DeclareLaunchArgument(
+    name='robot_type',
+    default_value='archer')
+```
+
+然后启动：
+
+```shell
+ros2 launch hex_ros_demo_arm_force_feedback real2real_force_feedback.launch.py
+```
+
+仅启动力反馈节点：
+
+```shell
 ros2 launch hex_ros_demo_arm_force_feedback arm_force_feedback.launch.py
 ```
 
 **ROS 1：**
 
-```shell
-# 仿真对仿真（sim2sim）
-roslaunch hex_ros_demo_arm_force_feedback sim2sim_force_feedback.launch viewer:=true rviz:=false
+仿真对仿真不需要修改真机连接参数：
 
-# 仅启动力反馈节点
+```shell
+roslaunch hex_ros_demo_arm_force_feedback sim2sim_force_feedback.launch
+```
+
+真机对仿真请先修改 `launch/ros1/real2sim_force_feedback.launch`：
+
+```xml
+<arg name="master_robot_host" default="192.168.1.100"/>
+<arg name="master_robot_port" default="8439"/>
+<arg name="robot_grip_type" default="empty"/>
+<arg name="robot_type" default="archer"/>
+```
+
+然后启动：
+
+```shell
+roslaunch hex_ros_demo_arm_force_feedback real2sim_force_feedback.launch
+```
+
+真机对真机请先修改 `launch/ros1/real2real_force_feedback.launch`：
+
+```xml
+<arg name="master_robot_host" default="192.168.1.100"/>
+<arg name="master_robot_port" default="8439"/>
+<arg name="slave_robot_host" default="192.168.1.101"/>
+<arg name="slave_robot_port" default="8439"/>
+<arg name="robot_grip_type" default="empty"/>
+<arg name="robot_type" default="archer"/>
+```
+
+然后启动：
+
+```shell
+roslaunch hex_ros_demo_arm_force_feedback real2real_force_feedback.launch
+```
+
+仅启动力反馈节点：
+
+```shell
 roslaunch hex_ros_demo_arm_force_feedback arm_force_feedback.launch
 ```
 
